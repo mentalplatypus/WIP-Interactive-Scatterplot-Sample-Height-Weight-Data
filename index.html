@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Interactive Scatterplot of Various Heights and Weights</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<h2>Scatterplot of Various Weights and Heights (by Gender)</h2>
+<p>This interactive visualization shows the relationship between various peoples' weights and heights, color-coded by gender. The x-axis is the person's weight in pounds and the y-axis is the person's height in inches. Hover over the data to see the color change!</p>
+
+<svg height="50" width="1200">
+  <circle cx="500" cy="25" r="10" stroke-width="3" fill="#5B90A7"/>
+  <circle cx="650" cy="25" r="10" stroke-width="3" fill="#F2BFC8"/>
+ <text x="520" y="30" font-family="Cambria">Male</text>
+ <text x="670" y="30" font-family="Cambria">Female</text>
+</svg>
+
+<script src="https://d3js.org/d3.v4.js"></script>
+<div id="scatterplot"></div>
+
+<script>
+var margin = {top: 10, right: 60, bottom: 60, left: 60},
+    width = 1200 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+var svg = d3.select("#scatterplot")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+<!-- data source -->
+d3.csv("https://gist.githubusercontent.com/nstokoe/7d4717e96c21b8ad04ec91f361b000cb/raw/bf95a2e30fceb9f2ae990eac8379fc7d844a0196/weight-height.csv", function(data) {
+
+  var x = d3.scaleLinear()
+    .domain([50, 280])
+    .range([ 0, width ]);
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+  
+  var y = d3.scaleLinear()
+    .domain([50, 80])
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  var color = d3.scaleOrdinal()
+    .domain(["male", "female"])
+    .range(["#5B90A7", "#F2BFC8"])
+
+  var highlight = function(d){
+
+    gender = d.Gender
+
+    d3.selectAll(".dot")
+      .transition()
+      .duration(1000)
+      .style("fill", "lightgrey")
+      .attr("r", 1)
+
+    d3.selectAll("." + gender)
+      .transition()
+      .duration(1000)
+      .style("fill", color(gender))
+      .attr("r", 2)
+  }
+
+  svg.append('g')
+    .selectAll("dot")
+    .data(data)
+    .enter()
+    .append("circle")
+      .attr("class", function (d) { return "dot " + d.Gender } )
+      .attr("cx", function (d) { return x(d.Weight); } )
+      .attr("cy", function (d) { return y(d.Height); } )
+      .attr("r", 1)
+      .style("fill", function (d) { return color(d.Gender) } )
+    .on("mouseover", highlight)
+    .on("mouseleave", doNotHighlight)
+})
+</script>
+<!-- partial -->
+  
+</body>
+</html>
